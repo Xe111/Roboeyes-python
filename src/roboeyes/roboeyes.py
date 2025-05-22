@@ -533,40 +533,53 @@ class RoboEyes:
                 eyeR_y_draw -= self.v_flicker_amplitude
             self.v_flicker_alternate = not self.v_flicker_alternate
 
-        eyeR_width_current_draw = self.eyeR_width_current
-        eyeR_height_current_draw = self.eyeR_height_current
-
+        # Correctly implement cyclops mode by modifying instance attributes
+        # This follows the C++ logic where attributes are changed before drawing
+        # and affects subsequent calculations if these attributes are used (e.g., constraints)
         if self.cyclops:
-            eyeR_width_current_draw = 0
-            eyeR_height_current_draw = 0
-            # spaceBetween_current_draw = 0 # Not directly used in drawing, but affects eyeR_x calculation
+            self.eyeR_width_current = 0
+            self.eyeR_height_current = 0
+            self.spaceBetween_current = 0  # Match C++ behavior
 
         # ACTUAL DRAWINGS
         self.draw.rectangle(
             [(0, 0), (self.screen_width, self.screen_height)], fill=BGCOLOR
         )  # Clear screen
 
+        # Ensure all coordinates and dimensions are integers before drawing
+        eyeL_x_draw_int = int(eyeL_x_draw)
+        eyeL_y_draw_int = int(eyeL_y_draw)
+        eyeL_width_current_int = int(self.eyeL_width_current)
+        eyeL_height_current_int = int(self.eyeL_height_current)
+        eyeL_border_radius_current_int = int(self.eyeL_border_radius_current)
+
+        eyeR_x_draw_int = int(eyeR_x_draw)
+        eyeR_y_draw_int = int(eyeR_y_draw)
+        eyeR_width_current_int = int(self.eyeR_width_current)
+        eyeR_height_current_int = int(self.eyeR_height_current)
+        eyeR_border_radius_current_int = int(self.eyeR_border_radius_current)
+
         # Draw basic eye rectangles
         # Pillow's rounded_rectangle takes (x0, y0, x1, y1)
         self.draw.rounded_rectangle(
             (
-                eyeL_x_draw,
-                eyeL_y_draw,
-                eyeL_x_draw + self.eyeL_width_current,
-                eyeL_y_draw + self.eyeL_height_current,
+                eyeL_x_draw_int,
+                eyeL_y_draw_int,
+                eyeL_x_draw_int + eyeL_width_current_int,
+                eyeL_y_draw_int + eyeL_height_current_int,
             ),
-            radius=int(self.eyeL_border_radius_current),
+            radius=eyeL_border_radius_current_int,
             fill=MAINCOLOR,
         )
         if not self.cyclops:
             self.draw.rounded_rectangle(
                 (
-                    eyeR_x_draw,
-                    eyeR_y_draw,
-                    eyeR_x_draw + eyeR_width_current_draw,
-                    eyeR_y_draw + eyeR_height_current_draw,
+                    eyeR_x_draw_int,
+                    eyeR_y_draw_int,
+                    eyeR_x_draw_int + eyeR_width_current_int,
+                    eyeR_y_draw_int + eyeR_height_current_int,
                 ),
-                radius=int(self.eyeR_border_radius_current),
+                radius=eyeR_border_radius_current_int,
                 fill=MAINCOLOR,
             )
 
@@ -597,20 +610,23 @@ class RoboEyes:
                 # Left eye
                 self.draw.polygon(
                     [
-                        (eyeL_x_draw, eyeL_y_draw - 1),
-                        (eyeL_x_draw + self.eyeL_width_current, eyeL_y_draw - 1),
-                        (eyeL_x_draw, eyeL_y_draw + self.eyelids_tired_height - 1),
+                        (eyeL_x_draw_int, eyeL_y_draw_int - 1),
+                        (eyeL_x_draw_int + eyeL_width_current_int, eyeL_y_draw_int - 1),
+                        (
+                            eyeL_x_draw_int,
+                            eyeL_y_draw_int + int(self.eyelids_tired_height) - 1,
+                        ),
                     ],
                     fill=BGCOLOR,
                 )
                 # Right eye
                 self.draw.polygon(
                     [
-                        (eyeR_x_draw, eyeR_y_draw - 1),
-                        (eyeR_x_draw + eyeR_width_current_draw, eyeR_y_draw - 1),
+                        (eyeR_x_draw_int, eyeR_y_draw_int - 1),
+                        (eyeR_x_draw_int + eyeR_width_current_int, eyeR_y_draw_int - 1),
                         (
-                            eyeR_x_draw + eyeR_width_current_draw,
-                            eyeR_y_draw + self.eyelids_tired_height - 1,
+                            eyeR_x_draw_int + eyeR_width_current_int,
+                            eyeR_y_draw_int + int(self.eyelids_tired_height) - 1,
                         ),
                     ],
                     fill=BGCOLOR,
@@ -619,20 +635,29 @@ class RoboEyes:
                 # Left half
                 self.draw.polygon(
                     [
-                        (eyeL_x_draw, eyeL_y_draw - 1),
-                        (eyeL_x_draw + (self.eyeL_width_current // 2), eyeL_y_draw - 1),
-                        (eyeL_x_draw, eyeL_y_draw + self.eyelids_tired_height - 1),
+                        (eyeL_x_draw_int, eyeL_y_draw_int - 1),
+                        (
+                            eyeL_x_draw_int + (eyeL_width_current_int // 2),
+                            eyeL_y_draw_int - 1,
+                        ),
+                        (
+                            eyeL_x_draw_int,
+                            eyeL_y_draw_int + int(self.eyelids_tired_height) - 1,
+                        ),
                     ],
                     fill=BGCOLOR,
                 )
                 # Right half
                 self.draw.polygon(
                     [
-                        (eyeL_x_draw + (self.eyeL_width_current // 2), eyeL_y_draw - 1),
-                        (eyeL_x_draw + self.eyeL_width_current, eyeL_y_draw - 1),
                         (
-                            eyeL_x_draw + self.eyeL_width_current,
-                            eyeL_y_draw + self.eyelids_tired_height - 1,
+                            eyeL_x_draw_int + (eyeL_width_current_int // 2),
+                            eyeL_y_draw_int - 1,
+                        ),
+                        (eyeL_x_draw_int + eyeL_width_current_int, eyeL_y_draw_int - 1),
+                        (
+                            eyeL_x_draw_int + eyeL_width_current_int,
+                            eyeL_y_draw_int + int(self.eyelids_tired_height) - 1,
                         ),
                     ],
                     fill=BGCOLOR,
@@ -647,11 +672,11 @@ class RoboEyes:
                 # Left eye
                 self.draw.polygon(
                     [
-                        (eyeL_x_draw, eyeL_y_draw - 1),
-                        (eyeL_x_draw + self.eyeL_width_current, eyeL_y_draw - 1),
+                        (eyeL_x_draw_int, eyeL_y_draw_int - 1),
+                        (eyeL_x_draw_int + eyeL_width_current_int, eyeL_y_draw_int - 1),
                         (
-                            eyeL_x_draw + self.eyeL_width_current,
-                            eyeL_y_draw + self.eyelids_angry_height - 1,
+                            eyeL_x_draw_int + eyeL_width_current_int,
+                            eyeL_y_draw_int + int(self.eyelids_angry_height) - 1,
                         ),
                     ],
                     fill=BGCOLOR,
@@ -659,9 +684,12 @@ class RoboEyes:
                 # Right eye
                 self.draw.polygon(
                     [
-                        (eyeR_x_draw, eyeR_y_draw - 1),
-                        (eyeR_x_draw + eyeR_width_current_draw, eyeR_y_draw - 1),
-                        (eyeR_x_draw, eyeR_y_draw + self.eyelids_angry_height - 1),
+                        (eyeR_x_draw_int, eyeR_y_draw_int - 1),
+                        (eyeR_x_draw_int + eyeR_width_current_int, eyeR_y_draw_int - 1),
+                        (
+                            eyeR_x_draw_int,
+                            eyeR_y_draw_int + int(self.eyelids_angry_height) - 1,
+                        ),
                     ],
                     fill=BGCOLOR,
                 )
@@ -669,11 +697,14 @@ class RoboEyes:
                 # Left half
                 self.draw.polygon(
                     [
-                        (eyeL_x_draw, eyeL_y_draw - 1),
-                        (eyeL_x_draw + (self.eyeL_width_current // 2), eyeL_y_draw - 1),
+                        (eyeL_x_draw_int, eyeL_y_draw_int - 1),
                         (
-                            eyeL_x_draw + (self.eyeL_width_current // 2),
-                            eyeL_y_draw + self.eyelids_angry_height - 1,
+                            eyeL_x_draw_int + (eyeL_width_current_int // 2),
+                            eyeL_y_draw_int - 1,
+                        ),
+                        (
+                            eyeL_x_draw_int + (eyeL_width_current_int // 2),
+                            eyeL_y_draw_int + int(self.eyelids_angry_height) - 1,
                         ),
                     ],
                     fill=BGCOLOR,
@@ -681,11 +712,14 @@ class RoboEyes:
                 # Right half
                 self.draw.polygon(
                     [
-                        (eyeL_x_draw + (self.eyeL_width_current // 2), eyeL_y_draw - 1),
-                        (eyeL_x_draw + self.eyeL_width_current, eyeL_y_draw - 1),
                         (
-                            eyeL_x_draw + (self.eyeL_width_current // 2),
-                            eyeL_y_draw + self.eyelids_angry_height - 1,
+                            eyeL_x_draw_int + (eyeL_width_current_int // 2),
+                            eyeL_y_draw_int - 1,
+                        ),
+                        (eyeL_x_draw_int + eyeL_width_current_int, eyeL_y_draw_int - 1),
+                        (
+                            eyeL_x_draw_int + (eyeL_width_current_int // 2),
+                            eyeL_y_draw_int + int(self.eyelids_angry_height) - 1,
                         ),
                     ],
                     fill=BGCOLOR,
@@ -696,33 +730,36 @@ class RoboEyes:
             self.eyelids_happy_bottom_offset + self.eyelids_happy_bottom_offset_next
         ) // 2
         if self.eyelids_happy_bottom_offset > 0:
+            eyelids_happy_bottom_offset_int = int(self.eyelids_happy_bottom_offset)
             # Left eye
             self.draw.rounded_rectangle(
                 (
-                    eyeL_x_draw - 1,
-                    (eyeL_y_draw + self.eyeL_height_current)
-                    - self.eyelids_happy_bottom_offset
+                    eyeL_x_draw_int - 1,
+                    (eyeL_y_draw_int + eyeL_height_current_int)
+                    - eyelids_happy_bottom_offset_int
                     + 1,
-                    eyeL_x_draw + self.eyeL_width_current + 1,
-                    eyeL_y_draw + self.eyeL_height_current + self.eyeL_height_default,
+                    eyeL_x_draw_int + eyeL_width_current_int + 1,
+                    eyeL_y_draw_int
+                    + eyeL_height_current_int
+                    + int(self.eyeL_height_default),
                 ),  # Ends well below the eye
-                radius=int(self.eyeL_border_radius_current),
+                radius=eyeL_border_radius_current_int,
                 fill=BGCOLOR,
             )
             if not self.cyclops:
                 # Right eye
                 self.draw.rounded_rectangle(
                     (
-                        eyeR_x_draw - 1,
-                        (eyeR_y_draw + eyeR_height_current_draw)
-                        - self.eyelids_happy_bottom_offset
+                        eyeR_x_draw_int - 1,
+                        (eyeR_y_draw_int + eyeR_height_current_int)
+                        - eyelids_happy_bottom_offset_int
                         + 1,
-                        eyeR_x_draw + eyeR_width_current_draw + 1,
-                        eyeR_y_draw
-                        + eyeR_height_current_draw
-                        + self.eyeR_height_default,
+                        eyeR_x_draw_int + eyeR_width_current_int + 1,
+                        eyeR_y_draw_int
+                        + eyeR_height_current_int
+                        + int(self.eyeR_height_default),
                     ),
-                    radius=int(self.eyeR_border_radius_current),
+                    radius=eyeR_border_radius_current_int,
                     fill=BGCOLOR,
                 )
 
