@@ -408,15 +408,15 @@ class RoboEyes:
         # Left eye height
         self.eyeL_height_current = (
             self.eyeL_height_current + self.eyeL_height_next + self.eyeL_height_offset
-        ) / 2
-        self.eyeL_y += (self.eyeL_height_default - self.eyeL_height_current) / 2
-        self.eyeL_y -= self.eyeL_height_offset / 2
+        ) // 2
+        self.eyeL_y += (self.eyeL_height_default - self.eyeL_height_current) // 2
+        self.eyeL_y -= self.eyeL_height_offset // 2
         # Right eye height
         self.eyeR_height_current = (
             self.eyeR_height_current + self.eyeR_height_next + self.eyeR_height_offset
-        ) / 2
-        self.eyeR_y += (self.eyeR_height_default - self.eyeR_height_current) / 2
-        self.eyeR_y -= self.eyeR_height_offset / 2
+        ) // 2
+        self.eyeR_y += (self.eyeR_height_default - self.eyeR_height_current) // 2
+        self.eyeR_y -= self.eyeR_height_offset // 2
 
         if self.eyeL_open:
             if self.eyeL_height_current <= 1 + self.eyeL_height_offset:
@@ -425,28 +425,28 @@ class RoboEyes:
             if self.eyeR_height_current <= 1 + self.eyeR_height_offset:
                 self.eyeR_height_next = self.eyeR_height_default
 
-        self.eyeL_width_current = (self.eyeL_width_current + self.eyeL_width_next) / 2
-        self.eyeR_width_current = (self.eyeR_width_current + self.eyeR_width_next) / 2
+        self.eyeL_width_current = (self.eyeL_width_current + self.eyeL_width_next) // 2
+        self.eyeR_width_current = (self.eyeR_width_current + self.eyeR_width_next) // 2
         self.spaceBetween_current = (
             self.spaceBetween_current + self.spaceBetween_next
-        ) / 2
+        ) // 2
 
-        self.eyeL_x = (self.eyeL_x + self.eyeL_x_next) / 2
-        self.eyeL_y = (self.eyeL_y + self.eyeL_y_next) / 2
+        self.eyeL_x = (self.eyeL_x + self.eyeL_x_next) // 2
+        self.eyeL_y = (self.eyeL_y + self.eyeL_y_next) // 2
 
         self.eyeR_x_next = (
             self.eyeL_x_next + self.eyeL_width_current + self.spaceBetween_current
         )
         self.eyeR_y_next = self.eyeL_y_next
-        self.eyeR_x = (self.eyeR_x + self.eyeR_x_next) / 2
-        self.eyeR_y = (self.eyeR_y + self.eyeR_y_next) / 2
+        self.eyeR_x = (self.eyeR_x + self.eyeR_x_next) // 2
+        self.eyeR_y = (self.eyeR_y + self.eyeR_y_next) // 2
 
         self.eyeL_border_radius_current = (
             self.eyeL_border_radius_current + self.eyeL_border_radius_next
-        ) / 2
+        ) // 2
         self.eyeR_border_radius_current = (
             self.eyeR_border_radius_current + self.eyeR_border_radius_next
-        ) / 2
+        ) // 2
 
         # APPLYING MACRO ANIMATIONS
         if self.autoblinker:
@@ -455,7 +455,11 @@ class RoboEyes:
                 self.blinktimer = (
                     current_time
                     + (self.blink_interval)
-                    + (random.randint(0, self.blink_interval_variation))
+                    + (
+                        random.randrange(self.blink_interval_variation)
+                        if self.blink_interval_variation > 0
+                        else 0
+                    )
                 )
 
         if self.laugh:
@@ -499,7 +503,11 @@ class RoboEyes:
                 self.idle_animation_timer = (
                     current_time
                     + (self.idle_interval)
-                    + (random.randint(0, self.idle_interval_variation))
+                    + (
+                        random.randrange(self.idle_interval_variation)
+                        if self.idle_interval_variation > 0
+                        else 0
+                    )
                 )
 
         eyeL_x_draw = self.eyeL_x
@@ -564,26 +572,26 @@ class RoboEyes:
 
         # Prepare mood type transitions
         if self.tired:
-            self.eyelids_tired_height_next = self.eyeL_height_current / 2
+            self.eyelids_tired_height_next = self.eyeL_height_current // 2
             self.eyelids_angry_height_next = 0
         else:
             self.eyelids_tired_height_next = 0
 
         if self.angry:
-            self.eyelids_angry_height_next = self.eyeL_height_current / 2
+            self.eyelids_angry_height_next = self.eyeL_height_current // 2
             self.eyelids_tired_height_next = 0
         else:
             self.eyelids_angry_height_next = 0
 
         if self.happy:
-            self.eyelids_happy_bottom_offset_next = self.eyeL_height_current / 2
+            self.eyelids_happy_bottom_offset_next = self.eyeL_height_current // 2
         else:
             self.eyelids_happy_bottom_offset_next = 0
 
         # Draw tired top eyelids
         self.eyelids_tired_height = (
             self.eyelids_tired_height + self.eyelids_tired_height_next
-        ) / 2
+        ) // 2
         if self.eyelids_tired_height > 0:  # Only draw if there's something to draw
             if not self.cyclops:
                 # Left eye
@@ -612,7 +620,7 @@ class RoboEyes:
                 self.draw.polygon(
                     [
                         (eyeL_x_draw, eyeL_y_draw - 1),
-                        (eyeL_x_draw + (self.eyeL_width_current / 2), eyeL_y_draw - 1),
+                        (eyeL_x_draw + (self.eyeL_width_current // 2), eyeL_y_draw - 1),
                         (eyeL_x_draw, eyeL_y_draw + self.eyelids_tired_height - 1),
                     ],
                     fill=BGCOLOR,
@@ -620,7 +628,7 @@ class RoboEyes:
                 # Right half
                 self.draw.polygon(
                     [
-                        (eyeL_x_draw + (self.eyeL_width_current / 2), eyeL_y_draw - 1),
+                        (eyeL_x_draw + (self.eyeL_width_current // 2), eyeL_y_draw - 1),
                         (eyeL_x_draw + self.eyeL_width_current, eyeL_y_draw - 1),
                         (
                             eyeL_x_draw + self.eyeL_width_current,
@@ -633,7 +641,7 @@ class RoboEyes:
         # Draw angry top eyelids
         self.eyelids_angry_height = (
             self.eyelids_angry_height + self.eyelids_angry_height_next
-        ) / 2
+        ) // 2
         if self.eyelids_angry_height > 0:
             if not self.cyclops:
                 # Left eye
@@ -662,9 +670,9 @@ class RoboEyes:
                 self.draw.polygon(
                     [
                         (eyeL_x_draw, eyeL_y_draw - 1),
-                        (eyeL_x_draw + (self.eyeL_width_current / 2), eyeL_y_draw - 1),
+                        (eyeL_x_draw + (self.eyeL_width_current // 2), eyeL_y_draw - 1),
                         (
-                            eyeL_x_draw + (self.eyeL_width_current / 2),
+                            eyeL_x_draw + (self.eyeL_width_current // 2),
                             eyeL_y_draw + self.eyelids_angry_height - 1,
                         ),
                     ],
@@ -673,10 +681,10 @@ class RoboEyes:
                 # Right half
                 self.draw.polygon(
                     [
-                        (eyeL_x_draw + (self.eyeL_width_current / 2), eyeL_y_draw - 1),
+                        (eyeL_x_draw + (self.eyeL_width_current // 2), eyeL_y_draw - 1),
                         (eyeL_x_draw + self.eyeL_width_current, eyeL_y_draw - 1),
                         (
-                            eyeL_x_draw + (self.eyeL_width_current / 2),
+                            eyeL_x_draw + (self.eyeL_width_current // 2),
                             eyeL_y_draw + self.eyelids_angry_height - 1,
                         ),
                     ],
@@ -686,7 +694,7 @@ class RoboEyes:
         # Draw happy bottom eyelids
         self.eyelids_happy_bottom_offset = (
             self.eyelids_happy_bottom_offset + self.eyelids_happy_bottom_offset_next
-        ) / 2
+        ) // 2
         if self.eyelids_happy_bottom_offset > 0:
             # Left eye
             self.draw.rounded_rectangle(
